@@ -1,6 +1,6 @@
 # automation
 <br>
-asoc_api.py:<br>
+<b>asoc_api.py:</b><br>
      – helper functions<br>
       - login()<br>
       - logout()<br>
@@ -8,15 +8,15 @@ asoc_api.py:<br>
       - dastScheduler(currentScanCount)<br>
       - scanReporting(scan_id)<br>
       - dast(scan_id)<br>
-scheduler.py: <br>
+<b>scheduler.py:</b> <br>
      - running on a 15 minute timer<br>
      - looks for scans in queue and starts them if in ‘queue’ state and if concurrent # of scans will be <=5<br>
      - Checks status of scans in ‘running’ state and, if complete, move to ‘completed’<br>
      - Generates a security report for scans that have completed<br>
-last_call.py:<br>
+<b>last_call.py:</b><br>
      - scheduled to run at the end of the nightly DAST scanning window<br>
      - pauses in scans still in ‘running’ state<br>
-DAST_Automation_Scheduler.csv:<br>
+<b>DAST_Automation_Scheduler.csv:</b><br>
      - sample csv file that will be read/updated throughout automation process<br>
      - current fields:<br>
         - application_id (not required but may be at a later point)<br>
