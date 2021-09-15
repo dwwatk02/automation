@@ -8,8 +8,8 @@ import time
 urllib3.disable_warnings()
 
 #API Key
-keyId="72026988-c01e-8266-cca4-367cb595416e"
-keySecret="VIS7dsVmNXv8O2sCkN820bk8fUu+i6ZC6rU/++PBwno="
+keyId="yourkeyid"
+keySecret="yourkeysecret"
 
 
 asoc = ASoC(keyId, keySecret)
@@ -18,16 +18,13 @@ code, result = asoc.login()
 if code != 200:
 	print(f'error logging into ASOC!! code is {code}')
 
-##### timer loop
 
-#starttime = time.time()
-#while True:
-	# read and update Scheduler csv file (application_id, scan_id, execution_id, scan_status)
-	#asoc.dastScheduler()
-	#time.sleep(60.0 - ((time.time() - starttime) % 60.0))
+starttime = time.time()
+print(f'--scheduler.py started: {starttime}--')
+while True:
+	scan_ids = asoc.dastScheduler(currentScanCount=asoc.getRunningScanCount())
+	for i in scan_ids:
+		asoc.dast(scan_id=i)
 
-# read and update Scheduler csv file (application_id, scan_id, execution_id, scan_status)
-scan_ids = asoc.dastScheduler(currentScanCount=asoc.getRunningScanCount())
-for i in scan_ids:
-	asoc.dast(scan_id=i)
+
 

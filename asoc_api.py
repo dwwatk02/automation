@@ -74,14 +74,14 @@ class ASoC:
             return count
         else:
             return r.status_code, r.text
+
     def dastScheduler(self,**args):
         currentScanCount = args["currentScanCount"]
         scan_ids = []
         print(f"current scan count: {currentScanCount}")
-        #csvfile = open('/Users/davidwatkins/Documents/DAST_Automation_Scheduler.csv','r')
         filename = '/Users/davidwatkins/Documents/DAST_Automation_Scheduler.csv'
         tempfile = NamedTemporaryFile(mode='w',delete=False)
-        fieldnames = ["application_id","scan_id","execution_id","scan_status","report_generated"]
+        fieldnames = ["application_id","scan_id","execution_id","scan_status","report_id"]
         with open(filename, 'r') as csvfile, tempfile:
 
             reader = csv.DictReader(csvfile,fieldnames=fieldnames)
@@ -90,39 +90,52 @@ class ASoC:
                 if(currentScanCount<=5 and row['scan_status'] == 'queued'):
                     scan_ids.append(row['scan_id'])
                     row['scan_status'] = 'running'
-                row = {'application_id': row['application_id'],'scan_id': row['scan_id'],'execution_id': row['execution_id'],'scan_status': row['scan_status'],'report_generated': row['report_generated']}
+                if(row['report_id']):
+                    
+                row = {'application_id': row['application_id'],'scan_id': row['scan_id'],'execution_id': row['execution_id'],'scan_status': row['scan_status'],'report_id': row['report_id']}
                 writer.writerow(row)
-            #create dictionary object from csv file that will be read and updated as needed - it will be converted and written back to csv file
-            #file_dict = json.loads(json.dumps(row))
-            #print(file_dict['application_id'])
-            #if(currentScanCount<=5 and file_dict['scan_status'] == "queued"):
-                #scan_ids.append(file_dict['scan_id'])
-            ## todo:  add logic to add execution_id to scans that are kicked off as well as change status to 'running'
-            ## todo:  if in running status from csv file, check via api to see if still running
-                ## if it completed, change status in csv file and getRunningScanCount to see if we're able to kick off any 'ready' scans
         shutil.move(tempfile.name,filename)
         return scan_ids
 
 
+    def reporter(self,**args):
+        scan_id = args["scan_id"]
+        scan_ids = []
+        print(f"current scan count: {currentScanCount}")
+        filename = '/Users/davidwatkins/Documents/DAST_Automation_Scheduler.csv'
+        tempfile = NamedTemporaryFile(mode='w',delete=False)
+        fieldnames = ["application_id","scan_id","execution_id","scan_status","report_id"]
+        with open(filename, 'r') as csvfile, tempfile:
+
+            reader = csv.DictReader(csvfile,fieldnames=fieldnames)
+            writer = csv.DictWriter(tempfile, fieldnames=fieldnames)
+            for row in reader:
+                if(currentScanCount<=5 and row['scan_status'] == 'queued'):
+                    scan_ids.append(row['scan_id'])
+                    row['scan_status'] = 'running'
+                row = {'application_id': row['application_id'],'scan_id': row['scan_id'],'execution_id': row['execution_id'],'scan_status': row['scan_status'],'report_id': row['report_id']}
+                writer.writerow(row)
+        shutil.move(tempfile.name,filename)
+        return scan_ids
+
 
     def dast(self, **args):
         scan_id = args["scan_id"]
-        #startingurl = args("StartingUrl")
-        #scanname = "placeholder TODO"
-        #appid = "4d5b6b9b-ec4c-4f98-b16b-b8390c7fa2d9"
         requesturl = f"https://cloud.appscan.com/api/v2/Scans/{scan_id}/Executions"
-        print(requesturl)
+        print(f'executing scan id: {scan_id}')
         data = {}
         req = requests.Request("POST", requesturl, headers=self.session.headers, data=json.dumps(data))
         preparedRequest = req.prepare()
-        #r = self.session.send(preparedRequest)
+        r = self.session.send(preparedRequest)
             
-        #if r.status_code == 200:
-        #    result = r.json()
+        if r.status_code == 200:
+            result = r.json()
             ## return needs to be json object with execution_id, start_time, etc. from necessary to update scheduler csv
-        #    return r.status_code, result
-        #else:
-            #return r.status_code, r.text
+            print(result)
+            return r.status_code, result
+        else:
+            return r.status_code, r.text
+    
     def scanReporting(self,**args):
         scan_id = args['scan_id']
         config = {'ReportFileType':'Pdf','Title':f'Security report for scan id: {scan_id}'}
@@ -131,17 +144,12 @@ class ASoC:
         }
         
         self.session.headers.update(additionalHeaders)
-        req = requests.Request("POST", \
-            f"https://cloud.appscan.com/api/v2/Reports/Security/Scan/{scan_id}", \
-            headers=self.session.headers, \
-            data=json.dumps(data))
+        req = requests.Request("POST",f"https://cloud.appscan.com/api/v2/Reports/Security/Scan/{scan_id}", headers=self.session.headers, data=json.dumps(data))
         preparedRequest = req.prepare()
         r = self.session.send(preparedRequest)
             
         if r.status_code == 200:
             result = r.json()
-            self.auth_token = result["Token"]
-            self.session.headers.update({"Authorization": "Bearer " + self.auth_token})
             return r.status_code, r.text
         else:
             return r.status_code, r.text
