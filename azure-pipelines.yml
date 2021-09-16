@@ -21,11 +21,6 @@ steps:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
 
-
-- script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
 - task: HCLAppScanOnCloud@2
   inputs:
     AppSecTestService: 'asoc connection'
