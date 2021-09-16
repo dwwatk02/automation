@@ -1,5 +1,11 @@
 # Python package
 - task: HCLAppScanOnCloud@2
+- task: HCLAppScanOnCloud@2
+  inputs:
+    AppSecTestService: 'asoc connection'
+    applications: 'e0275ae4-b80c-4abf-be52-dbe3599c9b5e'
+    scanname: 'test from azure dev ops'
+    scantype: 'static'
   inputs:
     AppSecTestService: 'asoc connection'
     applications: 'e0275ae4-b80c-4abf-be52-dbe3599c9b5e'
