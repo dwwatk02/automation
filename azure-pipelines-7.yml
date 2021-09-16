@@ -1,4 +1,5 @@
 # Python package
+
 # Create and test a Python package on multiple Python versions.
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
@@ -22,3 +23,9 @@ steps:
   displayName: 'Install dependencies'
 
 
+- task: HCLAppScanOnCloud@2
+  inputs:
+    AppSecTestService: 'asoc connection'
+    applications: '7370b3c1-fa70-434e-93dd-f78813ccd1dc'
+    scanname: 'test'
+    scantype: 'static'
