@@ -25,4 +25,9 @@ steps:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
 
-
+- task: HCLAppScanOnCloud@2
+  inputs:
+    AppSecTestService: 'asoc connection'
+    applications: '7370b3c1-fa70-434e-93dd-f78813ccd1dc'
+    scanname: 'test1'
+    scantype: 'static'
