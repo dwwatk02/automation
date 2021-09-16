@@ -1,20 +1,4 @@
 # Python package
-- task: HCLAppScanOnCloud@2
-- task: HCLAppScanOnCloud@2
-  inputs:
-    AppSecTestService: 'asoc connection'
-    applications: 'e0275ae4-b80c-4abf-be52-dbe3599c9b5e'
-    scanname: 'test from azure dev ops'
-    scantype: 'static'
-  inputs:
-    AppSecTestService: 'asoc connection'
-    applications: 'e0275ae4-b80c-4abf-be52-dbe3599c9b5e'
-    scanname: 'test from azure dev ops'
-    scantype: 'static'
-# Create and test a Python package on multiple Python versions.
-# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
-
 trigger:
 - main
 
@@ -46,3 +30,14 @@ steps:
     pip install pytest pytest-azurepipelines
     pytest
   displayName: 'pytest'
+- task: HCLAppScanOnCloud@2
+  inputs:
+    AppSecTestService: 'asoc connection'
+    applications: 'e0275ae4-b80c-4abf-be52-dbe3599c9b5e'
+    scanname: 'test from azure dev ops'
+    scantype: 'static'
+  inputs:
+    AppSecTestService: 'asoc connection'
+    applications: 'e0275ae4-b80c-4abf-be52-dbe3599c9b5e'
+    scanname: 'test from azure dev ops'
+    scantype: 'static'
