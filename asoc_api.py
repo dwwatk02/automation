@@ -90,7 +90,7 @@ class ASoC:
                 if(currentScanCount<=5 and row['scan_status'] == 'queued'):
                     scan_ids.append(row['scan_id'])
                     row['scan_status'] = 'running'
-                if(row['report_id']):
+                #if(row['report_id']):
                     
                     
                 row = {'application_id': row['application_id'],'scan_id': row['scan_id'],'execution_id': row['execution_id'],'scan_status': row['scan_status'],'report_id': row['report_id']}
@@ -157,7 +157,7 @@ class ASoC:
     def checkAuth(self):
         headers = {
             "Accept": "application/json",
-            "Authorization": "Bearer "+self.token
+            "Authorization": "Bearer "+self.auth_token
         }
         resp = requests.get("https://cloud.appscan.com/api/V2/Account/TenantInfo", headers=headers)
         return resp.status_code == 200
@@ -165,7 +165,7 @@ class ASoC:
     def getApplication(self, id):
         headers = {
             "Accept": "application/json",
-            "Authorization": "Bearer "+self.token
+            "Authorization": "Bearer "+self.auth_token
         }
         
         resp = requests.get("https://cloud.appscan.com/api/V2/Apps/"+id, headers=headers)
@@ -176,7 +176,26 @@ class ASoC:
             logger.debug(f"ASoC App Summary Error Response")
             self.logResponse(resp)
             return None
-            
+
+
+    def getApplications(self):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+        
+        resp = requests.get("https://cloud.appscan.com/api/V2/Apps/", headers=headers)
+        
+        if(resp.status_code == 200):
+            file1 = open('asoc_applications.json', 'w')
+            file1.write(str(resp.json()))
+            file1.close()
+            return resp.json()
+        else:
+            logger.debug(f"ASoC App Summary Error Response")
+            self.logResponse(resp)
+            return None
+
     def scanSummary(self, id, is_execution=False):
         if(is_execution):
             asoc_url = "https://cloud.appscan.com/api/v2/Scans/Execution/"
