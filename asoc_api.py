@@ -192,8 +192,42 @@ class ASoC:
             file1.close()
             return resp.json()
         else:
-            logger.debug(f"ASoC App Summary Error Response")
+            logger.debug("ASoC App Summary Error Response")
             self.logResponse(resp)
+            return None
+
+    def getApplicationIds(self):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+        
+        resp = requests.get("https://cloud.appscan.com/api/V2/Apps/?$select=Id%2CName", headers=headers)
+        
+        if(resp.status_code == 200):
+            #file1 = open('asoc_applications.json', 'w')
+            #file1.write(str(resp.json()))
+            #file1.close()
+            return resp.json()
+        else:
+            logger.debug("ASoC App Summary Error Response")
+            self.logResponse(resp)
+            return None
+
+    def getOpenSourceIssues(self,app_id):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+
+        resp = requests.get("https://cloud.appscan.com/api/v2/FixGroups/Application/"+app_id+"?$filter=IssueTypeId%20eq%20'OpenSource'&$select=File%2CSeverity", headers=headers)
+        
+        if(resp.status_code == 200):
+            return resp.json()
+        else:
+            #logger.debug("ASoC App Summary Error Response")
+            #self.logResponse(resp)
+            print("error")
             return None
 
     def scanSummary(self, id, is_execution=False):
@@ -204,7 +238,7 @@ class ASoC:
         
         headers = {
             "Accept": "application/json",
-            "Authorization": "Bearer "+self.token
+            "Authorization": "Bearer "+self.auth_token
         }
         
         resp = requests.get(asoc_url+id, headers=headers)
@@ -212,7 +246,7 @@ class ASoC:
         if(resp.status_code == 200):
             return resp.json()
         else:
-            logger.debug(f"ASoC Scan Summary")
+            logger.debug("ASoC Scan Summary")
             self.logResponse(resp)
             return None
         
@@ -225,12 +259,12 @@ class ASoC:
         elif(type == "ApplicationUpdated"):
             url = "https://cloud.appscan.com/api/v2/Reports/Security/Application/"+id
         else:
-            logger.error(f"Unknown Report Scope [{type}]")
+            logger.error("Unknown Report Scope " + type)
             return None
             
         headers = {
             "Accept": "application/json",
-            "Authorization": "Bearer "+self.token
+            "Authorization": "Bearer "+self.auth_token
         }
         resp = requests.post(url, headers=headers, json=reportConfig)
         if(resp.status_code == 200):
@@ -243,13 +277,13 @@ class ASoC:
     def reportStatus(self, reportId):
         headers = {
             "Accept": "application/json",
-            "Authorization": "Bearer "+self.token
+            "Authorization": "Bearer "+self.auth_token
         }
         resp = requests.get("https://cloud.appscan.com/api/V2/Reports/"+reportId, headers=headers)
         if(resp.status_code == 200):
             return resp.json()["Status"]
         else:
-            logger.debug(f"ASoC Report Status")
+            logger.debug("ASoC Report Status")
             self.logResponse(resp)
             return "Abort"
             
@@ -265,7 +299,7 @@ class ASoC:
     def downloadReport(self, reportId, fullPath):
         headers = {
             "Accept": "application/json",
-            "Authorization": "Bearer "+self.token
+            "Authorization": "Bearer "+self.auth_token
         }
         resp = requests.get("https://cloud.appscan.com/api/v2/Reports/Download/"+reportId, headers=headers)
         if(resp.status_code==200):
@@ -274,20 +308,20 @@ class ASoC:
                 f.write(report_bytes)
             return True
         else:
-            logger.debug(f"ASoC Download Report")
+            logger.debug("ASoC Download Report")
             self.logResponse(resp)
             return False
     
     def getWebhooks(self):
         headers = {
             "Accept": "application/json",
-            "Authorization": "Bearer "+self.token
+            "Authorization": "Bearer "+self.auth_token
         }
         resp = requests.get("https://cloud.appscan.com/api/V2/Webhooks", headers=headers)
         if(resp.status_code==200):
             return resp.json()
         else:
-            logger.debug(f"ASoC Get Webhooks")
+            logger.debug("ASoC Get Webhooks")
             self.logResponse(resp)
             return False
             
