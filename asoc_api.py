@@ -202,7 +202,8 @@ class ASoC:
             "Authorization": "Bearer "+self.auth_token
         }
         
-        resp = requests.get("https://cloud.appscan.com/api/V2/Apps/?$select=Id%2CName", headers=headers)
+        #resp = requests.get("https://cloud.appscan.com/api/V2/Apps/?$select=Id%2CName", headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/V2/Apps/", headers=headers)
         
         if(resp.status_code == 200):
             #file1 = open('asoc_applications.json', 'w')
@@ -230,6 +231,21 @@ class ASoC:
             print("error")
             return None
 
+    def getScanIssues(self,scan_exe_id):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+
+        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/ScanExecution/"+scan_exe_id+"?$inlinecount=allpages", headers=headers)
+        
+        if(resp.status_code == 200):
+            return resp.json()
+        else:
+            #logger.debug("ASoC App Summary Error Response")
+            #self.logResponse(resp)
+            print("error")
+            return None
     def scanSummary(self, id, is_execution=False):
         if(is_execution):
             asoc_url = "https://cloud.appscan.com/api/v2/Scans/Execution/"
