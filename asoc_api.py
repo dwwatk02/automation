@@ -237,7 +237,7 @@ class ASoC:
             "Authorization": "Bearer "+self.auth_token
         }
 
-        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/ScanExecution/"+scan_exe_id+"?$inlinecount=allpages", headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/Scan/"+scan_exe_id, headers=headers)
         
         if(resp.status_code == 200):
             return resp.json()
@@ -246,7 +246,22 @@ class ASoC:
             #self.logResponse(resp)
             print("error")
             return None
-    def scanSummary(self, id, is_execution=False):
+    def getScanExecutionIds(self):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+
+        #resp = requests.get("https://cloud.appscan.com/api/v2/Scans?top=100&$select=LastModified%2CLastSuccessfulExecution", headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v2/Scans?top=1&$select=Id", headers=headers)
+        if(resp.status_code == 200):
+            return resp.json()
+        else:
+            #logger.debug("ASoC App Summary Error Response")
+            #self.logResponse(resp)
+            print("error")
+            return None
+    def scanSummary(self, id, is_execution=True):
         if(is_execution):
             asoc_url = "https://cloud.appscan.com/api/v2/Scans/Execution/"
         else:
@@ -262,8 +277,8 @@ class ASoC:
         if(resp.status_code == 200):
             return resp.json()
         else:
-            logger.debug("ASoC Scan Summary")
-            self.logResponse(resp)
+            #logger.debug("ASoC Scan Summary")
+            print(resp)
             return None
         
     def startReport(self, id, reportConfig, type="ScanExecutionCompleted"):
