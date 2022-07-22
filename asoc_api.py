@@ -12,7 +12,7 @@ It can currently login, logout, and run a dast scan.
 Each function returns a tuple of the HTTP status code (200,201,401,403, etc...) and result (usually json)
 """
 class ASoC:
-    authToken = None
+    auth_token = None
     keyId = None
     keySecret = None
     debug = False
@@ -215,6 +215,24 @@ class ASoC:
             self.logResponse(resp)
             return None
 
+    def getScheduledScans(self):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+
+        resp = requests.get("https://cloud.appscan.com/api/v2/Scans/GetAsPage?%24inlinecount=allpages", headers=headers)
+        
+        if(resp.status_code == 200):
+            print("url: " + req.request.url)
+            print("body: " + req.request.body)
+            print("headers: " +req.request.headers)
+            return resp.json()
+        else:
+            #logger.debug("ASoC App Summary Error Response")
+            #self.logResponse(resp)
+            print("error")
+            return None
     def getOpenSourceIssues(self,app_id):
         headers = {
             "Accept": "application/json",
@@ -224,6 +242,7 @@ class ASoC:
         resp = requests.get("https://cloud.appscan.com/api/v2/FixGroups/Application/"+app_id+"?$filter=IssueTypeId%20eq%20'OpenSource'&$select=File%2CSeverity", headers=headers)
         
         if(resp.status_code == 200):
+
             return resp.json()
         else:
             #logger.debug("ASoC App Summary Error Response")
@@ -237,10 +256,11 @@ class ASoC:
             "Authorization": "Bearer "+self.auth_token
         }
 
-        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/Scan/"+scan_exe_id, headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/Scan/"+scan_exe_id+"?%24select=Id%2CLocation%2CIssueTypeId%2CHost%2CSeverity%2CStatus%2CIssueType%2CDateCreated%2CLastUpdated%2CDiscoveryMethod%2CScanName%2CApplicationId%2CCwe", headers=headers)
         
         if(resp.status_code == 200):
-            return resp.json()
+            result = resp.json()
+            return result
         else:
             #logger.debug("ASoC App Summary Error Response")
             #self.logResponse(resp)
@@ -383,3 +403,7 @@ class ASoC:
         logger.debug(f"ASoC Error Response: {resp.status_code}")
         logger.debug(resp.text)        
 
+    def writeStatus(self,outputFile, url):
+       file = open(outputFile, "a")
+       file.write(f"{url}\n")
+       file.close()
