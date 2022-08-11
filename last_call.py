@@ -1,11 +1,25 @@
 #!/usr/bin/python3
 
-import csv
-import requests
+from asoc_api import ASoC
+import urllib3
+import json
+import time
 
-#open Scan Queue csv file, return json 
-with open('vss.csv', 'r') as csvfile:
-	reader = csv.reader(csvfile, delimiter=',')
-	for row in reader:
-		print(row[0])
-		print(row[1])
+urllib3.disable_warnings()
+
+#API Key
+keyId="1b1e4de3-b796-bb9a-fa1f-0ef657ae02df"
+keySecret="m4UEZUywdAu8Qh5Sw2ad11ptDAn6JtGnTZqaQ1l57v8="
+
+asoc = ASoC(keyId, keySecret)
+
+code, result = asoc.login()
+if code != 200:
+	print(f'error logging into ASOC!! code is {code}')
+
+
+starttime = time.time()
+print(f'--last_call.py started: {starttime}--')
+
+#asoc.getRunningDASTScans()
+	

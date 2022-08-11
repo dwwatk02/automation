@@ -60,18 +60,25 @@ class ASoC:
             self.authToken = None
         return r.status_code, r.text
     
-    def getRunningScanCount(self):
-        r = requests.get('https://cloud.appscan.com/api/v2/Scans/CountByUser',  headers=self.session.headers)
+    def getRunningDASTScans(self):
+        r = requests.get('https://cloud.appscan.com/api/v2/Scans?%24filter=IsCompleted%20eq%20false%20and%20Technology%20eq%20\'DynamicAnalyzer\'&select%20eq%20\'LatestExecution\'' ,headers=self.session.headers)
+        #r = requests.get('https://cloud.appscan.com/api/v2/Scans/CountByUser',  headers=self.session.headers)
         count = 0
         if r.status_code == 200:
+            result = r.json()[LatestExecution][Id]
+            if(result is not None):
+                print(result)
+                return result
+        else:
+            return r.status_code, r.text
+
+    def pauseScan(self,exe_id):
+        #r = requests.get('https://cloud.appscan.com/api/v2/Scans?%24filter=IsCompleted%20eq%20false%20and%20Technology%20eq%20\'DynamicAnalyzer\'&select%20eq%20\'Id\'' ,headers=self.session.headers)
+        r = requests.put('https://cloud.appscan.com/api/v2/Scans/Execution/'+exe_id+'/Pause',headers=self.session.headers)
+        #r = requests.get('https://cloud.appscan.com/api/v2/Scans/CountByUser',  headers=self.session.headers)     
+        if r.status_code == 200:
             result = r.json()
-            for keyvalpair in result:
-                for key in keyvalpair:
-                    value = keyvalpair[key]
-                    if(key=="Count"):
-                        if(keyvalpair[key]):
-                            count = keyvalpair[key]
-            return count
+            return result
         else:
             return r.status_code, r.text
 
@@ -224,9 +231,6 @@ class ASoC:
         resp = requests.get("https://cloud.appscan.com/api/v2/Scans/GetAsPage?%24inlinecount=allpages", headers=headers)
         
         if(resp.status_code == 200):
-            print("url: " + req.request.url)
-            print("body: " + req.request.body)
-            print("headers: " +req.request.headers)
             return resp.json()
         else:
             #logger.debug("ASoC App Summary Error Response")
@@ -256,7 +260,7 @@ class ASoC:
             "Authorization": "Bearer "+self.auth_token
         }
 
-        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/Scan/"+scan_exe_id+"?%24select=Id%2CLocation%2CIssueTypeId%2CHost%2CSeverity%2CStatus%2CIssueType%2CDateCreated%2CLastUpdated%2CDiscoveryMethod%2CScanName%2CApplicationId%2CCwe", headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/Scan/"+scan_exe_id+"?top=1&select=Id%2CLocation%2CIssueTypeId%2CHost%2CSeverity%2CStatus%2CIssueType%2CDateCreated%2CLastUpdated%2CDiscoveryMethod%2CScanName%2CApplicationId%2CCwe", headers=headers)
         
         if(resp.status_code == 200):
             result = resp.json()
