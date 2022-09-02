@@ -10,5 +10,5 @@ schedule_monitor.py usage:
 <p>(Prerequisite is automation.csv (available in this repo) in the same directory in which the script will be executed)</p>
 <hr>
 get_opensource_issues.py usage:
-<code>execute by running: ./get_opensource_issues.py</code>
+<code>./get_opensource_issues.py</code>
 <hr>
