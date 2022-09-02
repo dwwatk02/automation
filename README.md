@@ -1,13 +1,14 @@
 <hr>
 
 openapiparser.py usage:
-
 <code>./openapiparser.py <url/swagger.json></code>
 <hr>
 schedule_monitor.py usage:
+<code>./schedule_monitor.py</code>
 
-<code>## pre-req is downloading/creating a file named automation.csv (located in this repository)</code>
 
-<code>## csv file headers:  ScanId,AppName,NextScheduledRun,RecurrenceRule,RecurrenceEndDate,Presence_Id</code>
-
-<code>execute by running: ./schedule_monitor.py</code>
+<p>(Prerequisite is automation.csv (available in this repo) in the same directory in which the script will be executed)</p>
+<hr>
+get_opensource_issues.py usage:
+<code>execute by running: ./get_opensource_issues.py</code>
+<hr>
