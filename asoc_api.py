@@ -1,10 +1,11 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 from tempfile import NamedTemporaryFile
 import requests
 import json
 import csv
 import shutil
+from extract import json_extract
 
 """
 This class should contain wrapper functions around the ASOC API
@@ -24,7 +25,7 @@ class ASoC:
         self.keySecret = keySecret
         self.session = requests.Session()
         self.session.verify = False
-            
+                
     def login(self):
         data={
           "KeyId": self.keyId,
@@ -49,7 +50,7 @@ class ASoC:
             return r.status_code, r.text
         else:
             return r.status_code, r.text
-    
+
     def logout(self):
         req = requests.Request("GET", \
             "https://cloud.appscan.com/api/V2/Account/Logout", \
@@ -61,26 +62,45 @@ class ASoC:
         return r.status_code, r.text
     
     def getRunningDASTScans(self):
-        r = requests.get('https://cloud.appscan.com/api/v2/Scans?%24filter=IsCompleted%20eq%20false%20and%20Technology%20eq%20\'DynamicAnalyzer\'&select%20eq%20\'LatestExecution\'' ,headers=self.session.headers)
+        #r = requests.get('https://cloud.appscan.com/api/v2/Scans?%24filter=IsCompleted%20eq%20false%20and%20Technology%20eq%20\'DynamicAnalyzer\'' ,headers=self.session.headers)
+        r = requests.get('https://cloud.appscan.com/api/v2/Scans?%24filter=Technology%20eq%20\'DynamicAnalyzer\'' ,headers=self.session.headers)
         #r = requests.get('https://cloud.appscan.com/api/v2/Scans/CountByUser',  headers=self.session.headers)
         count = 0
         if r.status_code == 200:
-            result = r.json()[LatestExecution][Id]
-            if(result is not None):
-                print(result)
-                return result
-        else:
-            return r.status_code, r.text
+           #print(type(json.loads(r.json())))
+            #print(type(r.json()))
+            #print("\n")
+            result = r.json()
+            for value_dict in result:
+                #print(value_dict)
+                for inner_dict in value_dict:
+                    if(inner_dict == "Id"):
+                        print("scan id: " +value_dict["Id"])
+                    if(inner_dict == "LatestExecution"):
+                        last_exe_dict = value_dict["LatestExecution"]
+                        for attrs in last_exe_dict:
+                            if(attrs == "Status"):
+                                print("status: " + last_exe_dict["Status"])
+                                if(last_exe_dict["Status"] == "Paused"):
+                                    return last_exe_dict["Id"]
+                                print("execution_id: " + last_exe_dict["Id"])
+                                print("\n")
 
-    def pauseScan(self,exe_id):
+
+        else:
+            return r.text
+
+    def changeScanStatus(self,exe_id,operation):
         #r = requests.get('https://cloud.appscan.com/api/v2/Scans?%24filter=IsCompleted%20eq%20false%20and%20Technology%20eq%20\'DynamicAnalyzer\'&select%20eq%20\'Id\'' ,headers=self.session.headers)
-        r = requests.put('https://cloud.appscan.com/api/v2/Scans/Execution/'+exe_id+'/Pause',headers=self.session.headers)
+        r = requests.put('https://cloud.appscan.com/api/v2/Scans/Execution/'+exe_id+'/'+operation,headers=self.session.headers)
         #r = requests.get('https://cloud.appscan.com/api/v2/Scans/CountByUser',  headers=self.session.headers)     
         if r.status_code == 200:
             result = r.json()
+            print(result)
             return result
         else:
             return r.status_code, r.text
+
 
     def dastScheduler(self,**args):
         currentScanCount = args["currentScanCount"]
@@ -184,6 +204,22 @@ class ASoC:
             self.logResponse(resp)
             return None
 
+    def getPresenceAssignedToScan(self, scan_id):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+        
+        resp = requests.get("https://cloud.appscan.com/api/V2/Scans/"+scan_id, headers=headers)
+        
+        if(resp.status_code == 200):
+            result = resp.json()['AppId']
+            if(result):
+                return result
+        else:
+            logger.debug(f"ASoC App Summary Error Response")
+            self.logResponse(resp)
+            return None
 
     def getApplications(self):
         headers = {
