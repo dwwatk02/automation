@@ -1,0 +1,6 @@
+- task: HCLAppScanOnCloud@2
+  inputs:
+    AppSecTestService: 'ASoC'
+    applications: '4d5b6b9b-ec4c-4f98-b16b-b8390c7fa2d9'
+    scantype: 'static'
+    ScanSpeedOptions: 'balanced'
