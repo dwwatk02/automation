@@ -1,6 +1,10 @@
-- task: HCLAppScanOnCloud@2
+steps:
+- task: PythonScript@0
+  displayName: 'Download SAClientUtil'
   inputs:
-    AppSecTestService: 'ASoC'
-    applications: '4d5b6b9b-ec4c-4f98-b16b-b8390c7fa2d9'
-    scantype: 'static'
-    ScanSpeedOptions: 'balanced'
+    scriptSource: inline
+    script: |
+      import urllib.request
+      url = 'https://cloud.appscan.com/api/SCX/StaticAnalyzer/SAClientUtil?os=win'
+      path = r"$(Build.ArtifactStagingDirectory)/filename.zip"
+      urllib.request.urlretrieve(url, path)
