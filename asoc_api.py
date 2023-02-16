@@ -290,6 +290,61 @@ class ASoC:
             print("error")
             return None
 
+    def getUsers(self):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+
+        resp = requests.get("https://cloud.appscan.com/api/V2/Users", headers=headers)
+        
+        if(resp.status_code == 200):
+
+            return resp.json()
+        else:
+            #logger.debug("ASoC App Summary Error Response")
+            #self.logResponse(resp)
+            print("error")
+            return None
+
+    def getV1PresenceScans(self):
+        headers = {"Accept":"application/json","Authorization": "Bearer "+self.auth_token}
+
+        resp = requests.get("https://cloud.appscan.com/api/v2/Scans/GetAsPage?%24filter=Presence%2FIsV2%20eq%20false&%24select=Id&inlinecount=allpages",headers=headers)
+
+        if(resp.status_code == 200):
+            result = resp.json()['Items']
+            if(result is not None):
+                return result
+            #print(result[0]['Id'])
+        else:
+            print("Error retrieving Scans with V1 Presences associated.  Status code = " + str(resp.status_code))
+            return None       
+
+    def getActivePresences(self):
+        headers = {"Accept":"application/json","Authorization": "Bearer "+self.auth_token}
+
+        resp = requests.get("https://cloud.appscan.com/api/v2/Presences?%24filter=IsV2%20eq%20true%20and%20Status%20eq%20\'Active\'&%24select=Id&inlinecount=allpages",headers=headers)
+
+        if(resp.status_code == 200):
+            print(resp.json())
+            return resp.json()
+        else:
+            print("Error retrieving Scans with V1 Presences associated.  Status code = " + str(resp.status_code))
+            return None       
+
+    def updateScanPresence(self,scan_id,pres_id):
+        headers = {"Accept":"application/json","Content-Type":"application/json","Authorization": "Bearer "+self.auth_token}
+        data = {"PresenceId":pres_id}
+        print(json.dumps(data))
+        print("https://cloud.appscan.com/api/v2/Scans/"+scan_id)
+        resp = requests.put("https://cloud.appscan.com/api/v2/Scans/"+scan_id,headers=headers,data=json.dumps(data))
+        print(str(resp))
+        if(resp.status_code == 204):
+            print("Scan successfully updated. " + resp.text)
+        else:
+            print("Error updating scan " + scan_id + ".  Status code = " + str(resp.status_code) + "status text: " + resp.text)      
+
     def getScanIssues(self,scan_exe_id):
         headers = {
             "Accept": "application/json",
