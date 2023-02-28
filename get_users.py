@@ -1,16 +1,16 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 from asoc_api import ASoC
 import urllib3
 import json
 import time
 
+
 urllib3.disable_warnings()
 
 #API Key
 keyId=""
 keySecret=""
-
 
 asoc = ASoC(keyId, keySecret)
 
@@ -19,8 +19,7 @@ if code != 200:
 	print(f'error logging into ASOC!! code is {code}')
 
 
-starttime = time.time()
-print("userid,full_name,role,status")
+print("userid,full_name,role,status,last_login")
 
 result = asoc.getUsers()
 
@@ -32,6 +31,13 @@ for user_info in result:
 	role = user_info['RoleName']
 	status = user_info['Status']
 	asset_groups = user_info['AssetGroupIds']
-	#if asset_groups is not None:
-		#print(asset_groups)
-	print(userid + "," + full + "," +role+","+status)
+	lastlogin = user_info['LastLogin']
+	if lastlogin is None:
+		lastlogin = "None"
+	asset_group = ""
+	if asset_groups:
+		for id in asset_groups:
+			#asset_group = asoc.getAssetGroupName(id)['Name']
+			#print(asoc.getAssetGroupName(id)['Name'])
+			print(userid + "," + full + ",Asset Group: " +asoc.getAssetGroupName(id)['Name']+","+status+","+lastlogin)
+	print(userid + "," + full + ",Role: " +role+","+status+","+lastlogin)
