@@ -203,6 +203,20 @@ class ASoC:
             logger.debug(f"ASoC App Summary Error Response")
             self.logResponse(resp)
             return None
+    def getAssetGroupName(self, id):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+        
+        resp = requests.get("https://cloud.appscan.com/api/V2/AssetGroups/"+id, headers=headers)
+        
+        if(resp.status_code == 200):
+            return resp.json()
+        else:
+            logger.debug(f"ASoC App Summary Error Response")
+            self.logResponse(resp)
+            return None
 
     def getPresenceAssignedToScan(self, scan_id):
         headers = {
@@ -273,6 +287,7 @@ class ASoC:
             #self.logResponse(resp)
             print("error")
             return None
+    
     def getOpenSourceIssues(self,app_id):
         headers = {
             "Accept": "application/json",
@@ -290,6 +305,38 @@ class ASoC:
             print("error")
             return None
 
+    def getIssuesByType(self,app_id,issue_type):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+
+        resp = requests.get("https://cloud.appscan.com/api/v2/FixGroups/Application/"+app_id+"?$filter=IssueTypeId%20eq%20'"+issue_type+"'", headers=headers)
+        
+        if(resp.status_code == 200):
+
+            return resp.json()
+        else:
+            #logger.debug("ASoC App Summary Error Response")
+            #self.logResponse(resp)
+            print("error")
+            return None
+    def getIssueTypeByApp(self,app_id):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+
+        resp = requests.get("https://cloud.appscan.com/api/v2/FixGroups/Application/"+app_id+"?$select=IssueTypeId", headers=headers)
+        
+        if(resp.status_code == 200):
+
+            return resp.json()
+        else:
+            #logger.debug("ASoC App Summary Error Response")
+            #self.logResponse(resp)
+            print("error")
+            return None
     def getUsers(self):
         headers = {
             "Accept": "application/json",
@@ -344,6 +391,25 @@ class ASoC:
             print("Scan successfully updated. " + resp.text)
         else:
             print("Error updating scan " + scan_id + ".  Status code = " + str(resp.status_code) + "status text: " + resp.text)      
+
+    def getIASTSessionID(self,app_id,scan_name):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+        downloadpayload = {"AgentType":"DotNet","ScanName":scan_name ,"AppId": app_id}
+
+        resp = requests.post("https://cloud.appscan.com/api/v2/Scans/IASTAnalyzer", headers=headers,json=downloadpayload)
+
+        print(resp.status_code)
+        if(resp.status_code == 201):
+            result = resp.json()['Id']
+            return result
+        else:
+            #logger.debug("ASoC App Summary Error Response")
+            #self.logResponse(resp)
+            print("error")
+            return None
 
     def getScanIssues(self,scan_exe_id):
         headers = {
@@ -458,6 +524,23 @@ class ASoC:
             self.logResponse(resp)
             return False
     
+    def downloadIASTAgent(self, reportId,    fullPath):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+        resp = requests.get("https://cloud.appscan.com/api/v2/Tools/IAST/DownloadWithKey?scanId="+reportId, headers=headers)
+        if(resp.status_code==200):
+            report_bytes = resp.content
+            with open(fullPath, "wb") as f:
+                f.write(report_bytes)
+            print("file successfully written to " + fullPath)
+            return True
+        else:
+            logger.debug("ASoC Download Report")
+            self.logResponse(resp)
+            return False
+
     def getWebhooks(self):
         headers = {
             "Accept": "application/json",
@@ -470,6 +553,27 @@ class ASoC:
             logger.debug("ASoC Get Webhooks")
             self.logResponse(resp)
             return False
+    def inviteUsers(self,email_list,asset_group_id,role_id):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+        data={}
+        data["Emails"]=email_list
+        asset_group_dict = []
+        asset_group_dict.append(asset_group_id)
+        data["AssetGroupIds"] = asset_group_dict
+        data["RoleId"] = role_id
+
+        resp = requests.post("https://cloud.appscan.com/api/V2/Account/InviteUsers",headers=headers,json=data)
+        if(resp.status_code==200):
+            print(resp.json())
+            return True
+        else:
+            logger.debug(f"Error")
+            self.logResponse(resp)
+            return False
+
             
     def createWebhook(self, presenceId, Uri, globalFlag=True, assetGroupId=None, event="ScanExecutionCompleted"):
         data = {}
