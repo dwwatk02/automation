@@ -311,7 +311,7 @@ class ASoC:
             "Authorization": "Bearer "+self.auth_token
         }
 
-        resp = requests.get("https://cloud.appscan.com/api/v2/FixGroups/Application/"+app_id+"?$filter=IssueTypeId%20eq%20'"+issue_type+"'", headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v2/FixGroups/Application/"+app_id+"?$filter=IssueTypeId%20eq%20'"+issue_type+"'&$select=File%2CSeverity", headers=headers)
         
         if(resp.status_code == 200):
 
