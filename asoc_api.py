@@ -337,6 +337,26 @@ class ASoC:
             #self.logResponse(resp)
             print("error")
             return None
+    def getIssuesByTypeAndApp(self,app_id,issue_type):
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer "+self.auth_token
+        }
+        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/Application/"+app_id+"?%24filter=Severity%20eq%20%20'Informational'%20and%20IssueType%20eq%20'"+issue_type+"'&%24select=Id&%24expand=%20&%24inlinecount=allpages",headers=headers)
+        if(resp.status_code == 200):    
+            return resp.json()['Items']
+        else:
+            print("error")
+            return None
+    def updateIssueStatus(self,issue_id,status,comment):
+        headers = {"Accept":"application/json","Content-Type":"application/json","Authorization": "Bearer "+self.auth_token}
+        data = {"Status":status,"Comment":comment,}
+        resp = requests.put("https://cloud.appscan.com/api/v2/Issues/"+issue_id,headers=headers,data=json.dumps(data))
+        if(resp.status_code == 204):
+            print("Issue successfully updated. " + resp.text)
+        else:
+            print("Error updating issue " + issue_id + ".  Status code = " + str(resp.status_code) + "status text: " + resp.text)
+
     def getUsers(self):
         headers = {
             "Accept": "application/json",
@@ -524,7 +544,7 @@ class ASoC:
             self.logResponse(resp)
             return False
     
-    def downloadIASTAgent(self, reportId,    fullPath):
+    def downloadIASTAgent(self,reportId,fullPath):
         headers = {
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
