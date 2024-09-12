@@ -5,6 +5,6 @@ steps:
     scriptSource: inline
     script: |
       import urllib.request
-      url = 'https://cloud.appscan.com/api/SCX/StaticAnalyzer/SACglientUtil?os=win'
+      url = 'https://cloud.appscan.com/api/v4/Tools/SAClientUtil?os=win'
       path = r"$(Build.ArtifactStagingDirectory)/filename.zip"
       urllib.request.urlretrieve(url, path)
