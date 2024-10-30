@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from tempfile import NamedTemporaryFile
 import requests
 import json
 import csv
@@ -54,7 +53,7 @@ class ASoC:
 
     def logout(self):
         req = requests.Request("GET", \
-            "https://cloud.appscan.com/api/V4/Account/Logout", \
+            "https://cloud.appscan.com/api/v4/Account/Logout", \
             headers=self.session.headers)
         preparedRequest = req.prepare()
         r = self.session.send(preparedRequest)
@@ -62,624 +61,73 @@ class ASoC:
             self.authToken = None
         return r.status_code, r.text
 
-    def doesUserExist(self,userID):
-        req = requests.Request("GET", \
-            'https://cloud.appscan.com/api/v4/User?filter=Username%20eq%20%27'+userID+'%27', \
-            headers=self.session.headers)
-        preparedRequest = req.prepare()
-        r = self.session.send(preparedRequest)
-        if r.status_code == 200:
-            return r.json()
-            
-    def isUserInAssetGroup(self,userID,group):
-        req = requests.Request("GET", \
-            'https://cloud.appscan.com/api/v4/User?filter=Username%20eq%20%27'+userID+'%27%20and%20%28%28AssetGroups%2Fany%28item%3A%20item%2FName%20eq%20%27'+group+'%27%29%29%29&%24expand=AssetGroups', \
-            headers=self.session.headers)
-        preparedRequest = req.prepare()
-        r = self.session.send(preparedRequest)
-        if r.status_code == 200:
-            return r.json()
+
     
-    def getScanCountByStatus(self):
-        req = requests.Request("GET", \
-            'https://cloud.appscan.com/api/v4/Scans?%24top=100&%24count=false&%24apply=groupby%28%28LatestExecution%2FStatus%29%2Caggregate%28%24count%20as%20Count%29%29',headers=self.session.headers)
-        preparedRequest = req.prepare()
-        r = self.session.send(preparedRequest)
-        if r.status_code == 200:
-            return r.json()
-        else:
-            print("Error querying /Scans API.  Status code: "+r.status_code)
-
-    def changeScanStatus(self,exe_id,operation):
-        #r = requests.get('https://cloud.appscan.com/api/v2/Scans?%24filter=IsCompleted%20eq%20false%20and%20Technology%20eq%20\'DynamicAnalyzer\'&select%20eq%20\'Id\'' ,headers=self.session.headers)
-        r = requests.put('https://cloud.appscan.com/api/v2/Scans/Execution/'+exe_id+'/'+operation,headers=self.session.headers)
-        #r = requests.get('https://cloud.appscan.com/api/v2/Scans/CountByUser',  headers=self.session.headers)     
-        if r.status_code == 200:
-            result = r.json()
-            print(result)
-            return result
-        else:
-            return r.status_code, r.text
-
-
-    def dastScheduler(self,**args):
-        currentScanCount = args["currentScanCount"]
-        scan_ids = []
-        print(f"current scan count: {currentScanCount}")
-        filename = '/Users/davidwatkins/Documents/DAST_Automation_Scheduler.csv'
-        tempfile = NamedTemporaryFile(mode='w',delete=False)
-        fieldnames = ["application_id","scan_id","execution_id","scan_status","report_id"]
-        with open(filename, 'r') as csvfile, tempfile:
-
-            reader = csv.DictReader(csvfile,fieldnames=fieldnames)
-            writer = csv.DictWriter(tempfile,fieldnames=fieldnames)
-            for row in reader:
-                if(currentScanCount<=5 and row['scan_status'] == 'queued'):
-                    scan_ids.append(row['scan_id'])
-                    row['scan_status'] = 'running'
-                #if(row['report_id']):
-                    
-                    
-                row = {'application_id': row['application_id'],'scan_id': row['scan_id'],'execution_id': row['execution_id'],'scan_status': row['scan_status'],'report_id': row['report_id']}
-                writer.writerow(row)
-        shutil.move(tempfile.name,filename)
-        return scan_ids
-
-
-    def reporter(self,**args):
-        scan_id = args["scan_id"]
-        scan_ids = []
-        print(f"current scan count: {currentScanCount}")
-        filename = '/Users/davidwatkins/Documents/DAST_Automation_Scheduler.csv'
-        tempfile = NamedTemporaryFile(mode='w',delete=False)
-        fieldnames = ["application_id","scan_id","execution_id","scan_status","report_id"]
-        with open(filename, 'r') as csvfile, tempfile:
-
-            reader = csv.DictReader(csvfile,fieldnames=fieldnames)
-            writer = csv.DictWriter(tempfile, fieldnames=fieldnames)
-            for row in reader:
-                if(currentScanCount<=5 and row['scan_status'] == 'queued'):
-                    scan_ids.append(row['scan_id'])
-                    row['scan_status'] = 'running'
-                row = {'application_id': row['application_id'],'scan_id': row['scan_id'],'execution_id': row['execution_id'],'scan_status': row['scan_status'],'report_id': row['report_id']}
-                writer.writerow(row)
-        shutil.move(tempfile.name,filename)
-        return scan_ids
-
-    def app_import_writer(self,**args):
-        scan_id = args["scan_id"]
-        scan_ids = []
-        print(f"current scan count: {currentScanCount}")
-        filename = '/Users/davidwatkins/Documents/DAST_Automation_Scheduler.csv'
-        tempfile = NamedTemporaryFile(mode='w',delete=False)
-        fieldnames = ["application_id","scan_id","execution_id","scan_status","report_id"]
-        with open(filename, 'r') as csvfile, tempfile:
-
-            reader = csv.DictReader(csvfile,fieldnames=fieldnames)
-            writer = csv.DictWriter(tempfile, fieldnames=fieldnames)
-            for row in reader:
-                if(currentScanCount<=5 and row['scan_status'] == 'queued'):
-                    scan_ids.append(row['scan_id'])
-                    row['scan_status'] = 'running'
-                row = {'application_id': row['application_id'],'scan_id': row['scan_id'],'execution_id': row['execution_id'],'scan_status': row['scan_status'],'report_id': row['report_id']}
-                writer.writerow(row)
-        shutil.move(tempfile.name,filename)
-        return scan_ids
-
-    def dast(self, **args):
-        scan_id = args["scan_id"]
-        requesturl = f"https://cloud.appscan.com/api/v2/Scans/{scan_id}/Executions"
-        print(f'executing scan id: {scan_id}')
-        data = {}
-        req = requests.Request("POST", requesturl, headers=self.session.headers, data=json.dumps(data))
-        preparedRequest = req.prepare()
-        r = self.session.send(preparedRequest)
-            
-        if r.status_code == 200:
-            result = r.json()
-            ## return needs to be json object with execution_id, start_time, etc. from necessary to update scheduler csv
-            print(result)
-            return r.status_code, result
-        else:
-            return r.status_code, r.text
-    
-    def scanReporting(self,**args):
-        scan_id = args['scan_id']
-        config = {'ReportFileType':'Pdf','Title':f'Security report for scan id: {scan_id}'}
-        data={ 
-          "Configuration": config
-        }
-        
-        self.session.headers.update(additionalHeaders)
-        req = requests.Request("POST",f"https://cloud.appscan.com/api/v2/Reports/Security/Scan/{scan_id}", headers=self.session.headers, data=json.dumps(data))
-        preparedRequest = req.prepare()
-        r = self.session.send(preparedRequest)
-            
-        if r.status_code == 200:
-            result = r.json()
-            return r.status_code, r.text
-        else:
-            return r.status_code, r.text
     def checkAuth(self):
         headers = {
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        resp = requests.get("https://cloud.appscan.com/api/V2/Account/TenantInfo", headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v4/Account/TenantInfo", headers=headers)
         return resp.status_code == 200
 
-    def getApplication(self, id):
+    def getAppIdByName(self,name):
         headers = {
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        
-        resp = requests.get("https://cloud.appscan.com/api/V2/Apps/"+id, headers=headers)
-        
+        resp = requests.get("https://cloud.appscan.com/api/v4/Apps?$filter=Name eq '" + name + "'", headers=headers)
         if(resp.status_code == 200):
             return resp.json()
         else:
-            logger.debug(f"ASoC App Summary Error Response")
-            self.logResponse(resp)
-            return None
-    def getAssetGroupName(self, id):
+            print("Error querying Application name. " + resp.text)
+
+    def getScanIdsByDate(self,endDate):
         headers = {
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        
-        resp = requests.get("https://cloud.appscan.com/api/V2/AssetGroups/"+id, headers=headers)
-        
+        odataFilter = "LatestExecution/ScanEndTime lt " + endDate + "T05:00:37.0000000Z"
+        odataSelect = "Id"
+        resp = requests.get("https://cloud.appscan.com/api/v4/Scans?$filter="+odataFilter+"&$select="+odataSelect,headers=headers)
         if(resp.status_code == 200):
             return resp.json()
         else:
-            logger.debug(f"ASoC App Summary Error Response")
-            self.logResponse(resp)
-            return None
+            print("Error querying Scans. " + resp.text)
 
-    def getPresenceAssignedToScan(self, scan_id):
+    def deleteScan(self,scanId):
         headers = {
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        
-        resp = requests.get("https://cloud.appscan.com/api/V2/Scans/"+scan_id, headers=headers)
-        
-        if(resp.status_code == 200):
-            result = resp.json()['AppId']
-            if(result):
-                return result
+        resp = requests.delete("https://cloud.appscan.com/api/v4/Scans/"+scanId+"?deleteIssues=true",headers=headers)
+        if(resp.status_code == 204):
+            print(scanId + " successfully deleted")
         else:
-            logger.debug(f"ASoC App Summary Error Response")
-            self.logResponse(resp)
-            return None
+            print("Couldn't delete " + scanId + ". Response code: " + resp.text)
 
-    def getApplications(self):
+    def getIssuesByCweAndApp(self,app_id,cwe):
         headers = {
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        
-        resp = requests.get("https://cloud.appscan.com/api/V2/Apps/", headers=headers)
-        
+        odataFilter = "Cwe eq " + str(cwe)
+        resp = requests.get("https://cloud.appscan.com/api/v4/Issues/Application/"+app_id+"?$filter="+odataFilter,headers=headers)
         if(resp.status_code == 200):
-            file1 = open('asoc_applications.json', 'w')
-            file1.write(str(resp.json()))
-            file1.close()
-            return resp.json()
-        else:
-            logger.debug("ASoC App Summary Error Response")
-            self.logResponse(resp)
-            return None
-
-    def getApplicationIds(self):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        
-        #resp = requests.get("https://cloud.appscan.com/api/V2/Apps/?$select=Id%2CName", headers=headers)
-        resp = requests.get("https://cloud.appscan.com/api/V2/Apps/", headers=headers)
-        
-        if(resp.status_code == 200):
-            #file1 = open('asoc_applications.json', 'w')
-            #file1.write(str(resp.json()))
-            #file1.close()
-            return resp.json()
-        else:
-            logger.debug("ASoC App Summary Error Response")
-            self.logResponse(resp)
-            return None
-
-    def getScheduledScans(self):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-
-        resp = requests.get("https://cloud.appscan.com/api/v2/Scans/GetAsPage?%24inlinecount=allpages", headers=headers)
-        
-        if(resp.status_code == 200):
-            return resp.json()
-        else:
-            #logger.debug("ASoC App Summary Error Response")
-            #self.logResponse(resp)
-            print("error")
-            return None
-    
-    def getOpenSourceIssues(self,app_id):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-
-        resp = requests.get("https://cloud.appscan.com/api/v2/FixGroups/Application/"+app_id+"?$filter=IssueTypeId%20eq%20'OpenSource'&$select=File%2CSeverity", headers=headers)
-        
-        if(resp.status_code == 200):
-
-            return resp.json()
-        else:
-            #logger.debug("ASoC App Summary Error Response")
-            #self.logResponse(resp)
-            print("error")
-            return None
-
-    def getIssuesByType(self,app_id,issue_type):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-
-        resp = requests.get("https://cloud.appscan.com/api/v2/FixGroups/Application/"+app_id+"?$filter=IssueTypeId%20eq%20'"+issue_type+"'&$select=File%2CSeverity", headers=headers)
-        
-        if(resp.status_code == 200):
-
-            return resp.json()
-        else:
-            #logger.debug("ASoC App Summary Error Response")
-            #self.logResponse(resp)
-            print("error")
-            return None
-    def getIssueTypeByApp(self,app_id):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-
-        resp = requests.get("https://cloud.appscan.com/api/v2/FixGroups/Application/"+app_id+"?$select=IssueTypeId", headers=headers)
-        
-        if(resp.status_code == 200):
-
-            return resp.json()
-        else:
-            #logger.debug("ASoC App Summary Error Response")
-            #self.logResponse(resp)
-            print("error")
-            return None
-    def getIssuesByTypeAndApp(self,app_id,issue_type):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/Application/"+app_id+"?%24filter=Severity%20eq%20%20'Informational'%20and%20IssueType%20eq%20'"+issue_type+"'&%24select=Id&%24expand=%20&%24inlinecount=allpages",headers=headers)
-        if(resp.status_code == 200):    
             return resp.json()['Items']
         else:
-            print("error")
-            return None
-    def updateIssueStatus(self,issue_id,status,comment):
+            print("error retrieving issues with CWE "+str(cwe)+" for application "+app_id)
+
+    def updateIssueStatus(self,app_id,issue_id,status,comment):
         headers = {"Accept":"application/json","Content-Type":"application/json","Authorization": "Bearer "+self.auth_token}
-        data = {"Status":status,"Comment":comment,}
-        resp = requests.put("https://cloud.appscan.com/api/v2/Issues/"+issue_id,headers=headers,data=json.dumps(data))
-        if(resp.status_code == 204):
+        data = {"Status":status,"Comment":comment}
+        odataFilter = "Id eq " + str(issue_id)
+        resp = requests.put("https://cloud.appscan.com/api/v4/Issues/Application/"+app_id+"?odataFilter="+odataFilter,headers=headers,data=json.dumps(data))
+        if(resp.status_code == 200):
             print("Issue successfully updated. " + resp.text)
         else:
             print("Error updating issue " + issue_id + ".  Status code = " + str(resp.status_code) + "status text: " + resp.text)
 
-    def getUsers(self):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-
-        resp = requests.get("https://cloud.appscan.com/api/V2/Users", headers=headers)
-        
-        if(resp.status_code == 200):
-
-            return resp.json()
-        else:
-            #logger.debug("ASoC App Summary Error Response")
-            #self.logResponse(resp)
-            print("error")
-            return None
-
-    def getV1PresenceScans(self):
-        headers = {"Accept":"application/json","Authorization": "Bearer "+self.auth_token}
-
-        resp = requests.get("https://cloud.appscan.com/api/v2/Scans/GetAsPage?%24filter=Presence%2FIsV2%20eq%20false&%24select=Id&inlinecount=allpages",headers=headers)
-
-        if(resp.status_code == 200):
-            result = resp.json()['Items']
-            if(result is not None):
-                return result
-            #print(result[0]['Id'])
-        else:
-            print("Error retrieving Scans with V1 Presences associated.  Status code = " + str(resp.status_code))
-            return None       
-
-    def getActivePresences(self):
-        headers = {"Accept":"application/json","Authorization": "Bearer "+self.auth_token}
-
-        resp = requests.get("https://cloud.appscan.com/api/v2/Presences?%24filter=IsV2%20eq%20true%20and%20Status%20eq%20\'Active\'&%24select=Id&inlinecount=allpages",headers=headers)
-
-        if(resp.status_code == 200):
-            print(resp.json())
-            return resp.json()
-        else:
-            print("Error retrieving Scans with V1 Presences associated.  Status code = " + str(resp.status_code))
-            return None       
-
-    def updateScanPresence(self,scan_id,pres_id):
-        headers = {"Accept":"application/json","Content-Type":"multipart/form-data","Authorization": "Bearer "+self.auth_token}
-        data = {"PresenceId":pres_id}
-        print(json.dumps(data))
-        print("https://cloud.appscan.com/api/v2/Scans/"+scan_id)
-        resp = requests.put("https://cloud.appscan.com/api/v2/Scans/"+scan_id,headers=headers,data=json.dumps(data))
-        print(str(resp))
-        if(resp.status_code == 204):
-            print("Scan successfully updated. " + resp.text)
-        else:
-            print("Error updating scan " + scan_id + ".  Status code = " + str(resp.status_code) + "status text: " + resp.text)      
-
-    def import_issue(self):
-        headers = {"Authorization": "Bearer "+self.auth_token,"Accept":"application/json"}
-        import_file_name = 'bf_log4j_issue.csv'
-        
-        files = {"file":(import_file_name, open(import_file_name, 'rb'), 'text/csv')}
-        url = 'https://cloud.appscan.com/api/v4/Issues/ImportIssues?appId=0ef93083-f85d-4f2f-a290-2436ecc886f8&scanName=import4'
-
-        resp = requests.post(url, files=files,headers=headers)
-        if(resp.status_code == 200):
-            result = resp.json()
-            print(result)
-            return result
-        else:
-            print(resp.status_code)
-            print(resp.json())
-            print("error")
-            return None
-
-    def getIASTSessionID(self,app_id,scan_name):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        downloadpayload = {"AgentType":"DotNet","ScanName":scan_name ,"AppId": app_id}
-
-        resp = requests.post("https://cloud.appscan.com/api/v2/Scans/IASTAnalyzer", headers=headers,json=downloadpayload)
-
-        print(resp.status_code)
-        if(resp.status_code == 201):
-            result = resp.json()['Id']
-            return result
-        else:
-            #logger.debug("ASoC App Summary Error Response")
-            #self.logResponse(resp)
-            print("error")
-            return None
-
-    def createApp(self,app_name,asset_group_id):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token,
-            "Content-Type": "application/json"
-        }
-        data = {"Name":app_name,"AssetGroupId":asset_group_id }
-
-        resp = requests.post("https://cloud.appscan.com/api/V2/Apps", headers=headers,data=json.dumps(data))
-
-        #print(resp.status_code)
-        if(resp.status_code == 200):
-            result = resp.json()['Id']
-            return result
-        else:
-            #logger.debug("ASoC App Summary Error Response")
-            #self.logResponse(resp)
-            print("error")
-            return None
-
-    def getScanIssues(self,scan_exe_id):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-
-        resp = requests.get("https://cloud.appscan.com/api/v2/Issues/Scan/"+scan_exe_id+"?top=1&select=Id%2CLocation%2CIssueTypeId%2CHost%2CSeverity%2CStatus%2CIssueType%2CDateCreated%2CLastUpdated%2CDiscoveryMethod%2CScanName%2CApplicationId%2CCwe", headers=headers)
-        
-        if(resp.status_code == 200):
-            result = resp.json()
-            return result
-        else:
-            #logger.debug("ASoC App Summary Error Response")
-            #self.logResponse(resp)
-            print("error")
-            return None
-    def getScanExecutionIds(self):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-
-        #resp = requests.get("https://cloud.appscan.com/api/v2/Scans?top=100&$select=LastModified%2CLastSuccessfulExecution", headers=headers)
-        resp = requests.get("https://cloud.appscan.com/api/v2/Scans?top=1&$select=Id", headers=headers)
-        if(resp.status_code == 200):
-            return resp.json()
-        else:
-            #logger.debug("ASoC App Summary Error Response")
-            #self.logResponse(resp)
-            print("error")
-            return None
-    def scanSummary(self, id, is_execution=True):
-        if(is_execution):
-            asoc_url = "https://cloud.appscan.com/api/v2/Scans/Execution/"
-        else:
-            asoc_url = "https://cloud.appscan.com/api/v2/Scans/"
-        
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        
-        resp = requests.get(asoc_url+id, headers=headers)
-        
-        if(resp.status_code == 200):
-            return resp.json()
-        else:
-            #logger.debug("ASoC Scan Summary")
-            print(resp)
-            return None
-        
-    def startReport(self, id, reportConfig, type="ScanExecutionCompleted"):
-    
-        if(type == "ScanExecutionCompleted"):
-            url = "https://cloud.appscan.com/api/v2/Reports/Security/ScanExecution/"+id
-        elif(type == "scan"):
-            url = "https://cloud.appscan.com/api/v2/Reports/Security/Scan/"+id
-        elif(type == "ApplicationUpdated"):
-            url = "https://cloud.appscan.com/api/v2/Reports/Security/Application/"+id
-        else:
-            logger.error("Unknown Report Scope " + type)
-            return None
-            
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        resp = requests.post(url, headers=headers, json=reportConfig)
-        if(resp.status_code == 200):
-            return resp.json()["Id"]
-        else:
-            logger.debug(f"ASoC startReport Error Response")
-            self.logResponse(resp)
-            return None
-        
-    def reportStatus(self, reportId):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        resp = requests.get("https://cloud.appscan.com/api/V2/Reports/"+reportId, headers=headers)
-        if(resp.status_code == 200):
-            return resp.json()["Status"]
-        else:
-            logger.debug("ASoC Report Status")
-            self.logResponse(resp)
-            return "Abort"
-            
-    def waitForReport(self, reportId, intervalSecs=3, timeoutSecs=60):
-        status = None
-        elapsed = 0
-        while status not in ["Abort","Ready"] or elapsed >= timeoutSecs:
-            status = self.reportStatus(reportId)
-            elapsed += intervalSecs
-            time.sleep(intervalSecs)   
-        return status == "Ready"
-        
-    def downloadReport(self, reportId, fullPath):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        resp = requests.get("https://cloud.appscan.com/api/v2/Reports/Download/"+reportId, headers=headers)
-        if(resp.status_code==200):
-            report_bytes = resp.content
-            with open(fullPath, "wb") as f:
-                f.write(report_bytes)
-            return True
-        else:
-            logger.debug("ASoC Download Report")
-            self.logResponse(resp)
-            return False
-    
-    def downloadIASTAgent(self,reportId,fullPath):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        resp = requests.get("https://cloud.appscan.com/api/v2/Tools/IAST/DownloadWithKey?scanId="+reportId, headers=headers)
-        if(resp.status_code==200):
-            report_bytes = resp.content
-            with open(fullPath, "wb") as f:
-                f.write(report_bytes)
-            print("file successfully written to " + fullPath)
-            return True
-        else:
-            logger.debug("ASoC Download Report")
-            self.logResponse(resp)
-            return False
-
-    def getWebhooks(self):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        resp = requests.get("https://cloud.appscan.com/api/V2/Webhooks", headers=headers)
-        if(resp.status_code==200):
-            return resp.json()
-        else:
-            logger.debug("ASoC Get Webhooks")
-            self.logResponse(resp)
-            return False
-    def inviteUsers(self,email_list,asset_group_id,role_id):
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.auth_token
-        }
-        data={}
-        data["Emails"]=email_list
-        asset_group_dict = []
-        asset_group_dict.append(asset_group_id)
-        data["AssetGroupIds"] = asset_group_dict
-        data["RoleId"] = role_id
-
-        resp = requests.post("https://cloud.appscan.com/api/V2/Account/InviteUsers",headers=headers,json=data)
-        if(resp.status_code==200):
-            print(resp.json())
-            return True
-        else:
-            logger.debug(f"Error")
-            self.logResponse(resp)
-            return False
-
-            
-    def createWebhook(self, presenceId, Uri, globalFlag=True, assetGroupId=None, event="ScanExecutionCompleted"):
-        data = {}
-        data["PresenceId"] = presenceId
-        data["Uri"] = Uri
-        if(globalFlag is not None):
-            data["Global"] = globalFlag
-        if(assetGroupId is not None):
-            data["AssetGroupId"] = assetGroupId
-        if(event is not None):
-            data["Event"] = event
-        
-        headers = {
-            "Accept": "application/json",
-            "Authorization": "Bearer "+self.token
-        }
-        resp = requests.post("https://cloud.appscan.com/api/V2/Webhooks", headers=headers, json=data)
-        if(resp.status_code==200):
-            return True
-        else:
-            logger.debug(f"ASoC Get Webhooks")
-            self.logResponse(resp)
-            return False
-    
     def logResponse(self, resp):
         logger.debug(f"ASoC Error Response: {resp.status_code}")
         logger.debug(resp.text)        
-
-    def writeStatus(self,outputFile, url):
-       file = open(outputFile, "a")
-       file.write(f"{url}\n")
-       file.close()
