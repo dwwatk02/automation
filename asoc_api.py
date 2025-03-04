@@ -6,6 +6,7 @@ import csv
 import shutil
 import os
 from extract import json_extract
+from security import safe_requests
 
 """
 This class should contain wrapper functions around the ASOC API
@@ -68,7 +69,7 @@ class ASoC:
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        resp = requests.get("https://cloud.appscan.com/api/v4/Account/TenantInfo", headers=headers)
+        resp = safe_requests.get("https://cloud.appscan.com/api/v4/Account/TenantInfo", headers=headers)
         return resp.status_code == 200
 
     def getAppIdByName(self,name):
@@ -76,7 +77,7 @@ class ASoC:
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        resp = requests.get("https://cloud.appscan.com/api/v4/Apps?$filter=Name eq '" + name + "'", headers=headers)
+        resp = safe_requests.get("https://cloud.appscan.com/api/v4/Apps?$filter=Name eq '" + name + "'", headers=headers)
         if(resp.status_code == 200):
             return resp.json()
         else:
@@ -89,7 +90,7 @@ class ASoC:
         }
         odataFilter = "LatestExecution/ScanEndTime lt " + endDate + "T05:00:37.0000000Z"
         odataSelect = "Id"
-        resp = requests.get("https://cloud.appscan.com/api/v4/Scans?$filter="+odataFilter+"&$select="+odataSelect,headers=headers)
+        resp = safe_requests.get("https://cloud.appscan.com/api/v4/Scans?$filter="+odataFilter+"&$select="+odataSelect,headers=headers)
         if(resp.status_code == 200):
             return resp.json()
         else:
@@ -112,7 +113,7 @@ class ASoC:
             "Authorization": "Bearer "+self.auth_token
         }
         odataFilter = "Cwe eq " + str(cwe)
-        resp = requests.get("https://cloud.appscan.com/api/v4/Issues/Application/"+app_id+"?$filter="+odataFilter,headers=headers)
+        resp = safe_requests.get("https://cloud.appscan.com/api/v4/Issues/Application/"+app_id+"?$filter="+odataFilter,headers=headers)
         if(resp.status_code == 200):
             return resp.json()['Items']
         else:

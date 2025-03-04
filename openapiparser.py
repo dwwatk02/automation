@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-import requests
 import sys
 import re
+from security import safe_requests
 
 def get_url_input():
     if len(sys.argv) < 2:
@@ -26,7 +26,7 @@ def get_url_input():
 
 
 def get_content(url):
-    r = requests.get(url)
+    r = safe_requests.get(url)
     try:
         return r.json()
     except:
