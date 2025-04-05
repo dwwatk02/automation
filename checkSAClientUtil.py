@@ -8,6 +8,6 @@ baseCmd = "/home_directory/.appscan/SAClientUtil/bin/appscan.sh"
 checkUpdateCmd = baseCmd + " checkUpdate"
 updateCmd = baseCmd + " update"
 
-output = subprocess.check_output(checkUpdateCmd, shell=True)
+output = subprocess.check_output(checkUpdateCmd, shell=False)
 if(output.decode().strip() != "No updates available."):
 	os.system(updateCmd)
