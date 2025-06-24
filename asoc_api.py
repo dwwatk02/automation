@@ -68,7 +68,7 @@ class ASoC:
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        resp = requests.get("https://cloud.appscan.com/api/v4/Account/TenantInfo", headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v4/Account/TenantInfo", headers=headers, timeout=60)
         return resp.status_code == 200
 
     def getAppIdByName(self,name):
@@ -76,7 +76,7 @@ class ASoC:
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        resp = requests.get("https://cloud.appscan.com/api/v4/Apps?$filter=Name eq '" + name + "'", headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v4/Apps?$filter=Name eq '" + name + "'", headers=headers, timeout=60)
         if(resp.status_code == 200):
             return resp.json()
         else:
@@ -89,7 +89,7 @@ class ASoC:
         }
         odataFilter = "LatestExecution/ScanEndTime lt " + endDate + "T05:00:37.0000000Z"
         odataSelect = "Id"
-        resp = requests.get("https://cloud.appscan.com/api/v4/Scans?$filter="+odataFilter+"&$select="+odataSelect,headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v4/Scans?$filter="+odataFilter+"&$select="+odataSelect,headers=headers, timeout=60)
         if(resp.status_code == 200):
             return resp.json()
         else:
@@ -100,7 +100,7 @@ class ASoC:
             "Accept": "application/json",
             "Authorization": "Bearer "+self.auth_token
         }
-        resp = requests.delete("https://cloud.appscan.com/api/v4/Scans/"+scanId+"?deleteIssues=true",headers=headers)
+        resp = requests.delete("https://cloud.appscan.com/api/v4/Scans/"+scanId+"?deleteIssues=true",headers=headers, timeout=60)
         if(resp.status_code == 204):
             print(scanId + " successfully deleted")
         else:
@@ -112,7 +112,7 @@ class ASoC:
             "Authorization": "Bearer "+self.auth_token
         }
         odataFilter = "Cwe eq " + str(cwe)
-        resp = requests.get("https://cloud.appscan.com/api/v4/Issues/Application/"+app_id+"?$filter="+odataFilter,headers=headers)
+        resp = requests.get("https://cloud.appscan.com/api/v4/Issues/Application/"+app_id+"?$filter="+odataFilter,headers=headers, timeout=60)
         if(resp.status_code == 200):
             return resp.json()['Items']
         else:
@@ -122,7 +122,7 @@ class ASoC:
         headers = {"Accept":"application/json","Content-Type":"application/json","Authorization": "Bearer "+self.auth_token}
         data = {"Status":status,"Comment":comment}
         odataFilter = "Id eq " + str(issue_id)
-        resp = requests.put("https://cloud.appscan.com/api/v4/Issues/Application/"+app_id+"?odataFilter="+odataFilter,headers=headers,data=json.dumps(data))
+        resp = requests.put("https://cloud.appscan.com/api/v4/Issues/Application/"+app_id+"?odataFilter="+odataFilter,headers=headers,data=json.dumps(data), timeout=60)
         if(resp.status_code == 200):
             print("Issue successfully updated. " + resp.text)
         else:

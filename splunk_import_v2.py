@@ -26,5 +26,5 @@ headers = {"Accept": "application/json","Authorization": "Splunk "+hec}
 id_result = asoc.getScanExecutionIds()
 for exeid in id_result:
 	scan_result = asoc.getScanIssues(exeid.get('Id').strip())
-	resp = requests.post(url, headers=headers, data=json.dumps({'event': scan_result}))
+	resp = requests.post(url, headers=headers, data=json.dumps({'event': scan_result}), timeout=60)
 	print(resp.status_code)

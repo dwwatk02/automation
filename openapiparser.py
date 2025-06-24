@@ -26,7 +26,7 @@ def get_url_input():
 
 
 def get_content(url):
-    r = requests.get(url)
+    r = requests.get(url, timeout=60)
     try:
         return r.json()
     except:
