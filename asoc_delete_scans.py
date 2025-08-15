@@ -37,8 +37,8 @@ scans = resp.json().get("Items", [])  # adjust key as appropriate
 # ---- 3. Filter and delete older scans ----
 to_delete = []
 for scan in scans:
-    created_str = scan.get("CreatedAt") or scan.get("CreationDate")
-    scan_id = scan.get("Id") or scan.get("ScanId")
+    created_str = scan.get("CreatedAt")
+    scan_id = scan.get("Id")
     if not created_str or not scan_id:
         continue
     # Assume ISO format, adjust parsing if needed
