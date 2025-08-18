@@ -29,10 +29,10 @@ headers = {"Authorization": f"Bearer {token}"}
 
 # ---- 2. Retrieve scans ----
 # Replace with actual endpoint found in Swagger—for example:
-scans_url = f"{API_BASE}/api/v4/Scans"  # tweak as needed
+scans_url = f"{API_BASE}/api/v4/Scans"  
 resp = requests.get(scans_url, headers=headers)
 resp.raise_for_status()
-scans = resp.json().get("Items", [])  # adjust key as appropriate
+scans = resp.json().get("Items", [])  
 
 # ---- 3. Filter and delete older scans ----
 to_delete = []
@@ -49,7 +49,7 @@ for scan in scans:
 print(f"Found {len(to_delete)} scans older than {cutoff_str}. Deleting...")
 
 for sid in to_delete:
-    del_url = f"{API_BASE}/api/v4/Scans/{sid}"  # adjust as per actual API
+    del_url = f"{API_BASE}/api/v4/Scans/{sid}"  
     dresp = requests.delete(del_url, headers=headers)
     if dresp.status_code in (200, 204):
         print(f"Deleted scan {sid}")
