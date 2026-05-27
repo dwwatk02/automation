@@ -40,7 +40,7 @@ TARGET_LOCATION_PATTERNS = [
 #
 # Severity Update
 #
-NEW_SEVERITY = "Medium"  # Informational | Low | Medium | High | Critical
+NEW_SEVERITY = "Low"  # Informational | Low | Medium | High | Critical
 
 COMMENT = "Updated severity via API automation"
 
