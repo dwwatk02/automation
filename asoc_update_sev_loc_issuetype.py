@@ -31,11 +31,10 @@ TARGET_ISSUE_TYPE = "Link to Non-Existing Domain Found"
 # Wildcard Location Patterns
 #
 # Examples:
-# "*.bcbsfl.com"
-# "*.guidewell.com"
+# "*.domain.com"
 #
 TARGET_LOCATION_PATTERNS = [
-    "*.testfire.com"
+    "*.testfire.net"
 ]
 
 #
