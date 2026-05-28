@@ -195,13 +195,7 @@ def get_issues_for_app(token, app_id):
 def wildcard_match(value, pattern):
 
     #
-    # Convert wildcard syntax:
-    #
-    # *.bcbsfl.com
-    #
-    # Into regex:
-    #
-    # .*\.bcbsfl\.com
+    # Convert wildcard syntax: *.domain.com Into regex:  .*\.domain\.com
     #
 
     regex = re.escape(pattern)
