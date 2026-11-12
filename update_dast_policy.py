@@ -12,10 +12,10 @@ BASE_URL = "https://cloud.appscan.com/api/v4"
 # Input file containing one scan UUID per line
 SCAN_IDS_FILE = "scan_ids.txt"
 
-# Target test policy ID
+# Target DAST test policy ID
 NEW_POLICY_ID = ""
 
-# API credentials
+# API credentials 
 API_KEY_ID = ""
 API_KEY_SECRET = ""
 
@@ -23,6 +23,7 @@ TIMEOUT = 60
 
 
 def create_session():
+
     if not API_KEY_ID or not API_KEY_SECRET:
         raise RuntimeError(
             "Set ASOC_API_KEY_ID and ASOC_API_KEY_SECRET "
@@ -30,6 +31,7 @@ def create_session():
         )
 
     session = requests.Session()
+
     session.headers.update({
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -40,6 +42,7 @@ def create_session():
 
 
 def read_scan_ids(filename):
+
     path = Path(filename)
 
     if not path.is_file():
@@ -57,36 +60,45 @@ def read_scan_ids(filename):
 
 
 def update_scan(session, scan_id):
-    # Retrieve the existing DAST scan configuration
-    get_url = f"{BASE_URL}/Scans/Dast/{scan_id}"
-    response = session.get(get_url, timeout=TIMEOUT)
-    response.raise_for_status()
 
-    scan = response.json()
-
-    # Update the test policy while preserving other scan properties
-    scan["CustomTestPolicyId"] = NEW_POLICY_ID
-
-    # Submit the full updated DAST scan object
     put_url = f"{BASE_URL}/Scans/Dast/{scan_id}"
+
+    # PUT request model: CustomTestPolicyId belongs
+    # inside the Tests object, not at the root level.
+
+    payload = {
+        "Tests": {
+            "CustomTestPolicyId": NEW_POLICY_ID
+        }
+    }
+
     response = session.put(
         put_url,
-        json=scan,
+        json=payload,
         timeout=TIMEOUT
     )
-    response.raise_for_status()
 
-    print(f"SUCCESS: Updated scan {scan_id} (HTTP {response.status_code})")
+    if not response.ok:
+        raise RuntimeError(
+            f"HTTP {response.status_code}: {response.text}"
+        )
+
+    print(
+        f"SUCCESS: Updated DAST test policy "
+        f"for scan {scan_id}"
+    )
 
 
 def main():
+
     if not NEW_POLICY_ID:
         sys.exit(
-            "Error: Set ASOC_TEST_POLICY_ID to the target test policy ID."
+            "Error: Set ASOC_TEST_POLICY_ID environment variable."
         )
 
     try:
         scan_ids = read_scan_ids(SCAN_IDS_FILE)
+
     except Exception as exc:
         sys.exit(f"Error reading scan IDs: {exc}")
 
@@ -94,9 +106,12 @@ def main():
         sys.exit("No scan IDs found in the input file.")
 
     print(f"Loaded {len(scan_ids)} scan IDs.")
+    print(f"Target test policy: {NEW_POLICY_ID}")
+    print("-" * 60)
 
     try:
         session = create_session()
+
     except Exception as exc:
         sys.exit(f"Authentication configuration error: {exc}")
 
@@ -104,17 +119,21 @@ def main():
     failed = 0
 
     for scan_id in scan_ids:
+
         try:
             update_scan(session, scan_id)
             succeeded += 1
+
         except Exception as exc:
             failed += 1
             print(f"FAILED: Scan {scan_id}: {exc}")
 
-    print("\nUpdate summary")
-    print(f"  Total:   {len(scan_ids)}")
-    print(f"  Success: {succeeded}")
-    print(f"  Failed:  {failed}")
+    print("\n" + "=" * 40)
+    print("UPDATE SUMMARY")
+    print("=" * 40)
+    print(f"Total:   {len(scan_ids)}")
+    print(f"Success: {succeeded}")
+    print(f"Failed:  {failed}")
 
 
 if __name__ == "__main__":
